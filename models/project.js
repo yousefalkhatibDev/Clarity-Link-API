@@ -194,7 +194,33 @@ module.exports = {
     GetProjectById: async (req, res) => {
         try {
             const { ProjectId } = req.query
-            let sqlQuery = "SELECT Developer, Engineer, Client FROM projects WHERE Project_id = ?";
+            let sqlQuery = "SELECT * FROM projects WHERE Project_id = ?";
+            await pool.query(
+                sqlQuery,
+                [
+                    ProjectId
+                ],
+                (err, results) => {
+                    if (err) {
+                        res.status(500).json({ ErrorMessage: "Error While Fetching Projects" });
+                        return; // Exit the callback function to avoid executing further code
+                    }
+
+                    if (results.length > 0) { // Check if there are rows returned
+                        res.status(200).json({ results });
+                    } else {
+                        res.status(500).json({ ErrorMessage: "No projects found" });
+                    }
+                }
+            );
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    },
+    GetProjectByIdDetails: async (req, res) => {
+        try {
+            const { ProjectId } = req.query
+            let sqlQuery = "SELECT * FROM projects WHERE Project_id = ?";
             await pool.query(
                 sqlQuery,
                 [

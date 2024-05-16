@@ -3,6 +3,7 @@ const cors = require("cors");
 const session = require('express-session')
 
 
+
 const app = express();
 
 
@@ -16,11 +17,20 @@ app.use(
         resave: false,
         saveUninitialized: false,
         cookie: {
-            expires: 60 * 60 * 24,
+            expires: 60 * 60 * 1000,
+            maxAge: 60 * 60 * 1000,
             secure: false,
         },
     })
 );
+
+// app.use((req, res, next) => {
+//     if (req.session && req.session.user) { // Check for existing session and user data
+//         req.session.cookie.maxAge = 60 * 60 * 1000; // Reset session expiry to 1 hour upon activity
+//         console.log("reseting")
+//     }
+//     next(); // Continue request processing
+// });
 
 const router = require("./routers/routes");
 app.use("/", router);

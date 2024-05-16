@@ -13,6 +13,7 @@ module.exports = {
             let userId;
             let userName = req.session.user.Name;
             let userSkills = req.session.user.Skills;
+
             const Bid_id = uuidv4();
             if (userType === "Developer") {
                 userId = req.session.user.Dev_id
@@ -129,6 +130,7 @@ module.exports = {
                                     res.status(500).json({ ErrorMessage: "Error While Setting Project Dev/Eng" });
                                     return; // Exit the callback function to avoid executing further code
                                 }
+                                // res.status(200).json({ results });
                                 if (results.affectedRows) { // Check if there are rows returned
                                     const bidSqlQuery = `DELETE FROM bids WHERE Bider_id = ?`
                                     await pool.query(

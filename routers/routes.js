@@ -110,6 +110,10 @@ router.get("/getProjectById", (req, res) => {
     Project.GetProjectById(req, res)
 })
 
+router.get("/getProjectByIdDetails", (req, res) => {
+    Project.GetProjectByIdDetails(req, res)
+})
+
 router.get("/isProjectQueryDone", (req, res) => {
     Project.IsProjectQueryDone(req, res)
 })
