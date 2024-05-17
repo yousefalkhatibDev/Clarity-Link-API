@@ -11,10 +11,6 @@ const AiChat = require("../models/aiChat")
 const Message = require("../models/messages");
 const SrsFile = require("../models/srsFile");
 
-router.get("/", (req, res) => {
-    res.send("Hello world");
-});
-
 router.post("/new/user/client", (req, res) => {
     Auth.RegisterClient(req, res);
 });
@@ -84,6 +80,10 @@ router.get("/getUserId", (req, res) => {
 
 router.post("/getUserNameById", (req, res) => {
     Auth.GetUserNameById(req, res)
+})
+
+router.post("/getClientNameById", (req, res) => {
+    Auth.GetClientNameById(req, res)
 })
 
 router.get("/getCurrentProjectId", (req, res) => {

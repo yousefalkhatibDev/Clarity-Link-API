@@ -17,8 +17,8 @@ app.use(
         resave: false,
         saveUninitialized: false,
         cookie: {
-            expires: 60 * 60 * 1000,
-            maxAge: 60 * 60 * 1000,
+            expires: 60 * 60 * 100000,
+            maxAge: 60 * 60 * 100000,
             secure: false,
         },
     })
@@ -34,6 +34,10 @@ app.use(
 
 const router = require("./routers/routes");
 app.use("/", router);
+
+router.get("/", (req, res) => {
+    res.send("Working").status(200);
+});
 
 const PORT = process.env.PORT || 8080;
 

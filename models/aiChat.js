@@ -3,7 +3,7 @@ const pool = require("../helper/database").pool;
 
 
 const client = new OpenAI({
-    apiKey: "", // This is the default and can be omitted
+    apiKey: "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", // This is the default and can be omitted
 });
 
 module.exports = {
