@@ -98,6 +98,11 @@ router.post("/setQuestionsInProjectQuery", (req, res) => {
     Project.SetQuestionInProjectQuery(req, res)
 })
 
+router.post("/finishProject", (req, res) => {
+    Project.FinishProject(req, res)
+
+})
+
 router.get("/getProjectQuestions", (req, res) => {
     Project.GetProjectQuestions(req, res)
 })

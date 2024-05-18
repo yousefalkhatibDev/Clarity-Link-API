@@ -1,6 +1,28 @@
 const pool = require("../helper/database").pool;
 const { v4: uuidv4 } = require('uuid');
+const WebSocket = require('ws');
 
+// Create a WebSocket server
+const wss = new WebSocket.Server({ port: 8094 }); // Adjust the port as needed
+
+function broadcastFinish(message) {
+    wss.clients.forEach(function each(client) {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(message));
+        }
+    });
+}
+
+// WebSocket connection handling
+wss.on('connection', function connection(ws) {
+    console.log('WebSocket client connected 2');
+
+    // Handle incoming messages from clients
+    ws.on('message', function incoming(message) {
+        // Handle incoming messages if required
+        console.log('Received message from client:', message);
+    });
+});
 
 module.exports = {
     CreateProject: async (req, res) => {
@@ -233,7 +255,132 @@ module.exports = {
                     }
 
                     if (results.length > 0) { // Check if there are rows returned
+                        broadcastFinish("working")
                         res.status(200).json({ results });
+                    } else {
+                        res.status(500).json({ ErrorMessage: "No projects found" });
+                    }
+                }
+            );
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    },
+    FinishProject: async (req, res) => {
+        try {
+            const { ProjectId, Project } = req.body
+            let sqlQuery = "DELETE FROM projects WHERE Project_id = ?";
+            await pool.query(
+                sqlQuery,
+                [
+                    ProjectId
+                ],
+                async (err, results) => {
+                    if (err) {
+                        res.status(500).json({ ErrorMessage: "Error While Fetching Projects" });
+                        return; // Exit the callback function to avoid executing further code
+                    }
+
+                    if (results.affectedRows) { // Check if there are rows 
+                        let sqlQuery = "DELETE FROM project_context WHERE Project_id = ?";
+                        await pool.query(
+                            sqlQuery,
+                            [
+                                ProjectId
+                            ],
+                            async (err, results) => {
+                                if (err) {
+                                    res.status(500).json({ ErrorMessage: "Error While Fetching Projects" });
+                                    return; // Exit the callback function to avoid executing further code
+                                }
+
+                                if (results.affectedRows) { // Check if there are rows 
+                                    let sqlQuery = "DELETE FROM project_query WHERE Project_id = ?";
+                                    await pool.query(
+                                        sqlQuery,
+                                        [
+                                            ProjectId
+                                        ],
+                                        async (err, results) => {
+                                            if (err) {
+                                                res.status(500).json({ ErrorMessage: "Error While Fetching Projects" });
+                                                return; // Exit the callback function to avoid executing further code
+                                            }
+
+                                            if (results.affectedRows) { // Check if there are rows 
+                                                let sqlQuery = "UPDATE clients SET Current_project_id = ? WHERE Current_project_id = ?";
+                                                await pool.query(
+                                                    sqlQuery,
+                                                    [
+                                                        null,
+                                                        ProjectId,
+                                                    ],
+                                                    async (err, results) => {
+                                                        if (err) {
+                                                            res.status(500).json({ ErrorMessage: "Error While Fetching Projects" });
+                                                            return; // Exit the callback function to avoid executing further code
+                                                        }
+
+                                                        if (results.affectedRows) { // Check if there are rows returned
+                                                            let sqlQuery = "UPDATE developers SET Current_project_id = ? WHERE Current_project_id = ?";
+                                                            await pool.query(
+                                                                sqlQuery,
+                                                                [
+                                                                    null,
+                                                                    ProjectId,
+                                                                ],
+                                                                async (err, results) => {
+                                                                    if (err) {
+                                                                        res.status(500).json({ ErrorMessage: "Error While Fetching Projects" });
+                                                                        return; // Exit the callback function to avoid executing further code
+                                                                    }
+
+                                                                    let sqlQuery2 = "UPDATE engineers SET Current_project_id = ? WHERE Current_project_id = ?";
+                                                                    await pool.query(
+                                                                        sqlQuery2,
+                                                                        [
+                                                                            null,
+                                                                            ProjectId,
+                                                                        ],
+                                                                        async (err, results) => {
+                                                                            if (err) {
+                                                                                res.status(500).json({ ErrorMessage: "Error While Fetching Projects" });
+                                                                                return; // Exit the callback function to avoid executing further code
+                                                                            }
+                                                                            broadcastFinish({ finish: true });
+                                                                            res.status(200).json({ clear: true });
+                                                                            // if (results.affectedRows) { // Check if there are rows returned
+
+                                                                            // } else {
+                                                                            //     res.status(500).json({ ErrorMessage: "No projects found" });
+                                                                            // }
+                                                                        }
+                                                                    );
+
+                                                                    // if (results.affectedRows) { // Check if there are rows 
+                                                                    // } else {
+                                                                    //     res.status(500).json({ ErrorMessage: "No projects found" });
+                                                                    // }
+                                                                }
+                                                            );
+
+                                                            // res.status(200).json({ results });
+                                                        } else {
+                                                            res.status(500).json({ ErrorMessage: "No projects found" });
+                                                        }
+                                                    }
+                                                );
+                                            } else {
+                                                res.status(500).json({ ErrorMessage: "No projects found" });
+                                            }
+                                        }
+                                    );
+                                } else {
+                                    res.status(500).json({ ErrorMessage: "No projects found" });
+                                }
+                            }
+                        );
+
                     } else {
                         res.status(500).json({ ErrorMessage: "No projects found" });
                     }
